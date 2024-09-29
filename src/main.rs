@@ -38,6 +38,11 @@ async fn main() {
         .await
         .expect("can't connect to database");
 
+    sqlx::migrate!("./migrations")
+        .run(&pool)
+        .await
+        .unwrap();
+
     let serve_assets = ServeEmbed::<Assets>::new();
 
     let app = Router::new()
