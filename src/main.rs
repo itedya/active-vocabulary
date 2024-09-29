@@ -2,11 +2,14 @@ mod handlers;
 mod html;
 mod components;
 
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
 use rust_embed::RustEmbed;
 use axum::Router;
 use axum::routing::get;
 use axum_embed::ServeEmbed;
 use lazy_static::lazy_static;
+use sqlx::postgres::PgPoolOptions;
 
 #[derive(RustEmbed, Clone)]
 #[folder = "assets/"]
@@ -25,11 +28,22 @@ lazy_static! {
 async fn main() {
     tracing_subscriber::fmt::init();
 
+    let db_connection_str = std::env::var("DATABASE_URL")
+        .unwrap_or_else(|_| "postgres://postgres:postgres@localhost".to_string());
+
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .acquire_timeout(Duration::from_secs(3))
+        .connect(&db_connection_str)
+        .await
+        .expect("can't connect to database");
+
     let serve_assets = ServeEmbed::<Assets>::new();
 
     let app = Router::new()
         .route("/", get(handlers::root))
-        .nest_service("/assets", serve_assets);
+        .nest_service("/assets", serve_assets)
+        .with_state(pool);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
