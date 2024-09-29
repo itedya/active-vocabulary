@@ -58,5 +58,3 @@ pub fn header() -> impl RenderableHtmlElement {
                 )
         )
 }
-
-pub fn
