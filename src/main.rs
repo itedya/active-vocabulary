@@ -1,5 +1,6 @@
 mod handlers;
 mod html;
+mod components;
 
 use rust_embed::RustEmbed;
 use axum::Router;

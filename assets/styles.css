@@ -68,6 +68,10 @@ body {
     color: var(--text-900);
 }
 
+a {
+    text-decoration: none;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -81,17 +85,21 @@ header.header {
     padding: 20px 32px;
 }
 
-header.header > div {
+header.header > .nav-title {
+    color: var(--text-600);
+}
+
+header.header > .nav-items {
     display: flex;
     align-items: center;
     gap: 20px;
 }
 
-header.header > div > a {
+header.header > .nav-items > a {
     color: var(--secondary-600);
     text-decoration: none;
 }
 
-header.header > div > a:hover {
+header.header > .nav-items > a:hover {
     color: var(--secondary-800);
 }
