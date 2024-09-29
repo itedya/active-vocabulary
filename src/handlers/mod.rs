@@ -1,12 +1,13 @@
 use axum::debug_handler;
 use axum::extract::State;
+use axum::http::HeaderMap;
 use axum::response::Html as RespondInHtml;
 use axum::response::{IntoResponse, Response};
 use sqlx::{FromRow, PgPool};
 use tracing::log::{log, Level};
-use crate::components::{header, layout};
-use crate::html::{ClosableHtmlElement, MultipleHtmlElements};
-use crate::html::ClosableHtmlElementType::{Div, Main};
+use crate::components::{header, layout, layout_with_basic_wrappers};
+use crate::html::{ClosableHtmlElement, MultipleHtmlElements, RenderableHtmlElement, Text};
+use crate::html::ClosableHtmlElementType::{Button, Div, Form, Main, A};
 
 fn log_and_return_internal_error(e: impl std::error::Error) -> Response {
     log!(Level::Error, "{}", e);
@@ -37,13 +38,31 @@ pub async fn root(State(pool): State<PgPool>) -> Result<Response, Response> {
 
     log!(Level::Info, "{:?}", words);
 
-    Ok(RespondInHtml(layout(
-        ClosableHtmlElement::new(Div)
-            .with_attribute("class", "container")
-            .with_content(
-                MultipleHtmlElements::new()
-                    .add_element(header())
-                    .add_element(ClosableHtmlElement::new(Main))
-            )
+    Ok(RespondInHtml(layout_with_basic_wrappers(
+        MultipleHtmlElements::new()
+            .add_element(ClosableHtmlElement::new(A)
+                .with_attribute("href", "/add-word")
+                .with_attribute("hx-boost", "true")
+                .with_attribute("hx-target", "main")
+                .with_attribute("class", "add-word-button")
+                .with_content(Text::new("Add word")))
     )).into_response())
+}
+
+#[debug_handler]
+pub async fn add_word_page(headers: HeaderMap) -> Result<Response, Response> {
+    let form = ClosableHtmlElement::new(Form)
+        .with_attribute("class", "add-word-form")
+        .with_content(
+            MultipleHtmlElements::new()
+                .add_element(ClosableHtmlElement::new(Button)
+                    .with_attribute("hx-post", "/add-word")
+                    .with_content(Text::new("Add word")))
+        );
+
+    if headers.contains_key("HX-Request") {
+        return Ok(RespondInHtml(form.render()).into_response());
+    }
+
+    Ok(RespondInHtml(layout_with_basic_wrappers(form)).into_response())
 }

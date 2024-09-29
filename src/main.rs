@@ -47,6 +47,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(handlers::root))
+        .route("/add-word", get(handlers::add_word_page))
         .nest_service("/assets", serve_assets)
         .with_state(pool);
 

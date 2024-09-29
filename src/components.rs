@@ -1,5 +1,5 @@
 use crate::html::{ClosableHtmlElement, MultipleHtmlElements, NonClosableHtmlElement, RenderableHtmlElement, Text};
-use crate::html::ClosableHtmlElementType::{Body, Div, Head, Header, Html, Title, A, H1};
+use crate::html::ClosableHtmlElementType::{Body, Div, Head, Header, Html, Main, Script, Title, A, H1};
 use crate::html::NonClosableHtmlElementType::{Doctype, Link, Meta};
 
 pub fn layout(body: impl RenderableHtmlElement) -> String {
@@ -25,7 +25,14 @@ pub fn layout(body: impl RenderableHtmlElement) -> String {
                         )
                         .add_element(
                             ClosableHtmlElement::new(Body)
-                                .with_content(body)
+                                .with_content(
+                                    MultipleHtmlElements::new()
+                                        .add_element(body)
+                                        .add_element(
+                                            ClosableHtmlElement::new(Script)
+                                                .with_attribute("src", "/assets/htmx.2.0.2.min.js")
+                                        )
+                                )
                         )
                 )
         )
@@ -57,4 +64,17 @@ pub fn header() -> impl RenderableHtmlElement {
                         )
                 )
         )
+}
+
+pub fn layout_with_basic_wrappers(body: impl RenderableHtmlElement) -> String {
+    layout(
+        ClosableHtmlElement::new(Div)
+            .with_attribute("class", "container")
+            .with_content(
+                MultipleHtmlElements::new()
+                    .add_element(header())
+                    .add_element(ClosableHtmlElement::new(Main)
+                        .with_content(body))
+            )
+    )
 }

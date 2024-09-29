@@ -103,3 +103,26 @@ header.header > .nav-items > a {
 header.header > .nav-items > a:hover {
     color: var(--secondary-800);
 }
+
+main {
+    padding: 20px 32px;
+}
+
+.add-word-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 32px;
+    width: 100%;
+    font-size: 16px;
+    background-color: var(--secondary-200);
+    color: var(--text-200);
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.add-word-button:hover {
+    background-color: var(--secondary-300);
+    color: var(--text-300);
+}
