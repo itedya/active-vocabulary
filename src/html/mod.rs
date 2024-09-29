@@ -1,6 +1,4 @@
 use std::collections::HashMap;
-use std::os::windows::prelude::OsStringExt;
-use tracing_subscriber::fmt::format;
 
 #[derive(Clone)]
 pub enum ClosableHtmlElementType {
@@ -32,6 +30,9 @@ pub enum ClosableHtmlElementType {
     Button,
     Select,
     Option,
+    Header,
+    Main,
+    Footer,
 }
 
 impl Into<String> for ClosableHtmlElementType {
@@ -65,6 +66,9 @@ impl Into<String> for ClosableHtmlElementType {
             ClosableHtmlElementType::Button => "button".to_string(),
             ClosableHtmlElementType::Select => "select".to_string(),
             ClosableHtmlElementType::Option => "option".to_string(),
+            ClosableHtmlElementType::Header => "header".to_string(),
+            ClosableHtmlElementType::Main => "main".to_string(),
+            ClosableHtmlElementType::Footer => "footer".to_string(),
         }
     }
 }
@@ -90,8 +94,8 @@ impl ClosableHtmlElement {
         self
     }
 
-    pub fn with_attribute(mut self, key: String, value: String) -> Self {
-        self.attributes.insert(key, value);
+    pub fn with_attribute(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.attributes.insert(key.into(), value.into());
         self
     }
 }
@@ -159,8 +163,9 @@ impl NonClosableHtmlElement {
         }
     }
 
-    pub fn with_attribute(mut self, key: String, value: String) -> Self {
-        self.attributes.insert(key, value);
+    pub fn with_attribute(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.attributes.insert(key.into(), value.into());
+
         self
     }
 }
