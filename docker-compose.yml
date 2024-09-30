@@ -1,0 +1,18 @@
+services:
+  database:
+    image: postgres:latest
+    container_name: av_database
+    environment:
+      POSTGRES_USER: av_user
+      POSTGRES_PASSWORD: av_password
+      POSTGRES_DB: av_db
+    ports:
+      - "8020:5432"
+  database_management_software:
+    image: dpage/pgadmin4:latest
+    container_name: av_database_management_software
+    environment:
+      PGADMIN_DEFAULT_EMAIL: user@example.com
+      PGADMIN_DEFAULT_PASSWORD: av_password
+    ports:
+      - "8021:80"
