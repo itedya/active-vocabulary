@@ -115,7 +115,7 @@ impl RenderableHtmlElement for ClosableHtmlElement {
         }
 
         for (key, value) in &self.attributes {
-            result.push_str(&format!("{}=\"{}\"", key, html_escape::encode_text(value)));
+            result.push_str(&format!("{}=\"{}\"", key, html_escape::encode_double_quoted_attribute(value)));
         }
 
         result.push_str(">");
@@ -187,7 +187,7 @@ impl RenderableHtmlElement for NonClosableHtmlElement {
         }
 
         let attributes_stringified: String = self.attributes.iter().map(|(key, value)| {
-            format!("{}=\"{}\"", key, html_escape::encode_text(value))
+            format!("{}=\"{}\"", key, html_escape::encode_double_quoted_attribute(value))
         }).collect::<Vec<String>>().join(" ");
 
         element.push_str(&attributes_stringified);
@@ -209,7 +209,7 @@ impl<'a> MultipleHtmlElements<'a> {
         }
     }
 
-    pub fn add_element(&mut self, element: impl RenderableHtmlElement + 'a) -> &mut Self {
+    pub fn add_element(mut self, element: impl RenderableHtmlElement + 'a) -> Self {
         self.elements.push(Box::new(element));
 
         self
