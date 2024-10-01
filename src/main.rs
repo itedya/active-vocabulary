@@ -29,7 +29,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     let db_connection_str = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "postgres://postgres:postgres@localhost".to_string());
+        .unwrap_or_else(|_| "postgres://av_user:av_password@localhost:8020/av_db".to_string());
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
