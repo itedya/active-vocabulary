@@ -96,3 +96,33 @@ pub async fn add_word(State(pool): State<PgPool>, ExtractForm(form): ExtractForm
 
     Ok((StatusCode::OK, headers, RespondInHtml(layout_with_basic_wrappers(add_word_form(Default::default(), Default::default())))).into_response())
 }
+
+#[derive(Debug, Deserialize)]
+pub struct DeleteWordForm {
+    id: i32,
+}
+
+#[debug_handler]
+pub async fn delete_word(State(pool): State<PgPool>, ExtractForm(form): ExtractForm<DeleteWordForm>) -> Result<Response, Response> {
+    let mut tx = pool.begin().await.map_err(log_and_return_internal_error)?;
+
+    sqlx::query("DELETE FROM words WHERE id = $1")
+        .bind(form.id)
+        .execute(&mut *tx)
+        .await
+        .map_err(log_and_return_internal_error)?;
+
+    let words: Vec<Word> = sqlx::query_as("SELECT * FROM words")
+        .fetch_all(&mut *tx)
+        .await
+        .map_err(log_and_return_internal_error)?;
+
+    tx.commit().await.map_err(log_and_return_internal_error)?;
+
+    let response_html = layout_with_basic_wrappers(word_list_component(words));
+
+    let mut headers = HeaderMap::new();
+    headers.insert("HX-Retarget", "body".parse().unwrap());
+
+    Ok((StatusCode::OK, headers, RespondInHtml(response_html)).into_response())
+}

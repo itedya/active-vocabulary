@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use rust_embed::RustEmbed;
 use axum::Router;
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum_embed::ServeEmbed;
 use lazy_static::lazy_static;
 use sqlx::postgres::PgPoolOptions;
@@ -49,6 +49,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(handlers::root))
         .route("/add-word", get(handlers::add_word_page).post(handlers::add_word))
+        .route("/delete-word", post(handlers::delete_word))
         .nest_service("/assets", serve_assets)
         .with_state(pool);
 
