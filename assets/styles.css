@@ -1,8 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+
+    font-family: Inter, sans-serif;
 }
+
+/* https://www.realtimecolors.com/?colors=F2F7F4-020303-49B681-26734E-258D5B&fonts=Inter-Inter */
 
 :root {
     --text: hsl(144, 24%, 96%);
@@ -70,6 +76,10 @@ body {
 
 a {
     text-decoration: none;
+}
+
+button:hover {
+    outline: none;
 }
 
 .container {
@@ -157,4 +167,46 @@ main {
 
 .input-wrapper > input:focus {
     outline: none;
+}
+
+.add-word-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.flex-row {
+    display: flex;
+    gap: 20px;
+    flex-direction: row;
+}
+
+.button-primary {
+    padding: 12px 24px;
+    background-color: var(--primary);
+    color: var(--background);
+    border: 0;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.button-secondary {
+    padding: 12px 24px;
+    background-color: var(--secondary-300);
+    color: var(--text-900);
+    border: 0;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.gap-12 {
+    gap: 12px;
 }
