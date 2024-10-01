@@ -11,7 +11,7 @@ use sqlx::encode::IsNull::No;
 use tracing::log::{log, Level};
 use crate::components::{header, layout, layout_with_basic_wrappers, add_word_form, InputComponent, InputType, AddWordFormData, AddWordFormErrors, AddWordFormDataRedirectAction};
 use crate::html::{ClosableHtmlElement, MultipleHtmlElements, RenderableHtmlElement, Text};
-use crate::html::ClosableHtmlElementType::{Button, Div, Form, Main, A, P};
+use crate::html::ClosableHtmlElementType::{Button, Div, Form, Main, Table, Tbody, Td, Th, Thead, Tr, A, P};
 
 fn log_and_return_internal_error(e: impl std::error::Error) -> Response {
     log!(Level::Error, "{}", e);
@@ -40,6 +40,54 @@ pub async fn root(State(pool): State<PgPool>) -> Result<Response, Response> {
 
     tx.commit().await.map_err(log_and_return_internal_error)?;
 
+    let words_content = if words.len() == 0 {
+        ClosableHtmlElement::new(P)
+            .with_attribute("class", "no-words-message")
+            .with_content(Text::new("You have no words yet. Add them by clicking the button above."))
+    } else {
+        let mut tbody_elements = MultipleHtmlElements::new();
+
+        for word in words {
+            tbody_elements = tbody_elements.add_element(
+                ClosableHtmlElement::new(Tr)
+                    .with_content(
+                        MultipleHtmlElements::new()
+                            .add_element(
+                                ClosableHtmlElement::new(Td)
+                                    .with_content(Text::new(word.word))
+                            )
+                            .add_element(
+                                ClosableHtmlElement::new(Td)
+                                    .with_content(Text::new(word.translation))
+                            )
+                    )
+            );
+        }
+
+        ClosableHtmlElement::new(Table)
+            .with_content(
+                MultipleHtmlElements::new()
+                    .add_element(
+                        ClosableHtmlElement::new(Thead)
+                            .with_content(
+                                MultipleHtmlElements::new()
+                                    .add_element(
+                                        ClosableHtmlElement::new(Th)
+                                            .with_content(Text::new("Word"))
+                                    )
+                                    .add_element(
+                                        ClosableHtmlElement::new(Td)
+                                            .with_content(Text::new("Translation"))
+                                    )
+                            )
+                    )
+                    .add_element(
+                        ClosableHtmlElement::new(Tbody)
+                            .with_content(tbody_elements)
+                    )
+            )
+    };
+
     Ok(RespondInHtml(layout_with_basic_wrappers(
         MultipleHtmlElements::new()
             .add_element(ClosableHtmlElement::new(A)
@@ -49,9 +97,7 @@ pub async fn root(State(pool): State<PgPool>) -> Result<Response, Response> {
                 .with_attribute("class", "add-word-button")
                 .with_content(Text::new("Add word")))
             .add_element(
-                ClosableHtmlElement::new(P)
-                    .with_attribute("class", "no-words-message")
-                    .with_content(Text::new("You have no words yet. Add them by clicking the button above."))
+                words_content
             )
     )).into_response())
 }

@@ -23,6 +23,8 @@ pub enum ClosableHtmlElementType {
     Ol,
     Li,
     Table,
+    Thead,
+    Tbody,
     Tr,
     Th,
     Td,
@@ -71,6 +73,8 @@ impl Into<String> for ClosableHtmlElementType {
             ClosableHtmlElementType::Main => "main".to_string(),
             ClosableHtmlElementType::Footer => "footer".to_string(),
             ClosableHtmlElementType::Label => "label".to_string(),
+            ClosableHtmlElementType::Thead => "thead".to_string(),
+            ClosableHtmlElementType::Tbody => "tbody".to_string(),
         }
     }
 }
