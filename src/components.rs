@@ -1,6 +1,7 @@
+use rand::random;
 use crate::html::{ClosableHtmlElement, MultipleHtmlElements, NonClosableHtmlElement, RenderableHtmlElement, Text};
-use crate::html::ClosableHtmlElementType::{Body, Div, Head, Header, Html, Main, Script, Title, A, H1};
-use crate::html::NonClosableHtmlElementType::{Doctype, Link, Meta};
+use crate::html::ClosableHtmlElementType::{Body, Div, Head, Header, Html, Label, Main, Script, Title, A, H1};
+use crate::html::NonClosableHtmlElementType::{Doctype, Input, Link, Meta};
 
 pub fn layout(body: impl RenderableHtmlElement) -> String {
     MultipleHtmlElements::new()
@@ -77,4 +78,53 @@ pub fn layout_with_basic_wrappers(body: impl RenderableHtmlElement) -> String {
                         .with_content(body))
             )
     )
+}
+
+pub enum InputType {
+    Text,
+    Number,
+    Password,
+}
+
+impl Into<String> for InputType {
+    fn into(self) -> String {
+        match self {
+            InputType::Text => "text".to_string(),
+            InputType::Number => "number".to_string(),
+            InputType::Password => "password".to_string(),
+        }
+    }
+}
+
+pub fn input(r#type: InputType, label: impl Into<String>, name: impl Into<String>, custom_id: Option<impl Into<String>>) -> impl RenderableHtmlElement {
+    let type_stringified: String = r#type.into();
+
+    let label = label.into();
+    let name = name.into();
+
+    let id = custom_id.map_or_else(|| {
+        let randomizer = random::<u64>();
+        let name = name.clone();
+
+        format!("{}-{}", name, randomizer)
+    }, |v| {
+        v.into()
+    });
+
+    ClosableHtmlElement::new(Div)
+        .with_attribute("class", "input-wrapper")
+        .with_content(
+            MultipleHtmlElements::new()
+                .add_element(
+                    ClosableHtmlElement::new(Label)
+                        .with_attribute("for", id.clone())
+                        .with_content(Text::new(label))
+                )
+                .add_element(
+                    NonClosableHtmlElement::new(Input)
+                        .with_attribute("type", type_stringified)
+                        .with_attribute("name", name)
+                        .with_attribute("id", id)
+                )
+        )
 }

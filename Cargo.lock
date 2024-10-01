@@ -10,6 +10,7 @@ dependencies = [
  "axum-embed",
  "html-escape",
  "lazy_static",
+ "rand",
  "rust-embed",
  "serde",
  "serde_json",

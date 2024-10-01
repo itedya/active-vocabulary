@@ -33,6 +33,7 @@ pub enum ClosableHtmlElementType {
     Header,
     Main,
     Footer,
+    Label,
 }
 
 impl Into<String> for ClosableHtmlElementType {
@@ -69,6 +70,7 @@ impl Into<String> for ClosableHtmlElementType {
             ClosableHtmlElementType::Header => "header".to_string(),
             ClosableHtmlElementType::Main => "main".to_string(),
             ClosableHtmlElementType::Footer => "footer".to_string(),
+            ClosableHtmlElementType::Label => "label".to_string(),
         }
     }
 }
