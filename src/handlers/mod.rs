@@ -46,6 +46,11 @@ pub async fn root(State(pool): State<PgPool>) -> Result<Response, Response> {
                 .with_attribute("hx-target", "main")
                 .with_attribute("class", "add-word-button")
                 .with_content(Text::new("Add word")))
+            .add_element(
+                ClosableHtmlElement::new(P)
+                    .with_attribute("class", "no-words-message")
+                    .with_content(Text::new("You have no words yet. Add them by clicking the button above."))
+            )
     )).into_response())
 }
 

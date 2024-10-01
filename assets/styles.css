@@ -96,12 +96,12 @@ header.header > .nav-items {
 }
 
 header.header > .nav-items > a {
-    color: var(--secondary-600);
+    color: var(--text-900);
     text-decoration: none;
 }
 
 header.header > .nav-items > a:hover {
-    color: var(--secondary-800);
+    color: var(--text-600);
 }
 
 main {
@@ -115,14 +115,23 @@ main {
     padding: 20px 32px;
     width: 100%;
     font-size: 16px;
-    background-color: var(--secondary-200);
-    color: var(--text-200);
+    background-color: var(--secondary-300);
+    color: var(--text-600);
     border: 0;
     border-radius: 8px;
     cursor: pointer;
 }
 
 .add-word-button:hover {
-    background-color: var(--secondary-300);
-    color: var(--text-300);
+    background-color: var(--secondary-400);
+}
+
+.no-words-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 48px 0;
+    font-size: 16px;
+    color: var(--text-600);
+    font-weight: bold;
 }
