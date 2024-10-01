@@ -1,6 +1,7 @@
 mod handlers;
 mod html;
 mod components;
+mod models;
 
 use std::sync::{Arc, Mutex};
 use std::time::Duration;

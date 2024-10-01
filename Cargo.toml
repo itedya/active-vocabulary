@@ -17,3 +17,4 @@ tokio = { version = "1.40.0", features = ["full"] }
 tracing = { version = "0.1.40", features = ["log"] }
 tracing-subscriber = "0.3.18"
 rand = { version = "0.8.5", features = [] }
+sqlx-core = "0.8.2"

@@ -1,8 +1,9 @@
 use rand::random;
 use serde::Deserialize;
 use crate::html::{ClosableHtmlElement, MultipleHtmlElements, NonClosableHtmlElement, RenderableHtmlElement, Text};
-use crate::html::ClosableHtmlElementType::{Body, Button, Div, Form, Head, Header, Html, Label, Main, Script, Title, A, H1};
+use crate::html::ClosableHtmlElementType::{Body, Button, Div, Form, Head, Header, Html, Label, Main, Script, Table, Tbody, Td, Th, Thead, Title, Tr, A, H1, P};
 use crate::html::NonClosableHtmlElementType::{Doctype, Input, Link, Meta};
+use crate::models::Word;
 
 pub fn layout(body: impl RenderableHtmlElement) -> String {
     MultipleHtmlElements::new()
@@ -218,7 +219,6 @@ pub fn add_word_form(data: AddWordFormData, errors: AddWordFormErrors) -> impl R
                                 .add_element(
                                     ClosableHtmlElement::new(Button)
                                         .with_attribute("hx-post", "/add-word")
-                                        .with_attribute("hx-target", "main")
                                         .with_attribute("hx-vals", "{\"redirect_action\": \"List\"}")
                                         .with_attribute("class", "button-primary")
                                         .with_attribute("type", "submit")
@@ -227,7 +227,6 @@ pub fn add_word_form(data: AddWordFormData, errors: AddWordFormErrors) -> impl R
                                 .add_element(
                                     ClosableHtmlElement::new(Button)
                                         .with_attribute("hx-post", "/add-word")
-                                        .with_attribute("hx-target", "main")
                                         .with_attribute("hx-vals", "{\"redirect_action\": \"Stay\"}")
                                         .with_attribute("class", "button-secondary")
                                         .with_attribute("type", "submit")
@@ -235,5 +234,66 @@ pub fn add_word_form(data: AddWordFormData, errors: AddWordFormErrors) -> impl R
                                 )
                         )
                 )
+        )
+}
+
+pub fn word_list_component(words: Vec<Word>) -> impl RenderableHtmlElement {
+    let words_content = if words.len() == 0 {
+        ClosableHtmlElement::new(P)
+            .with_attribute("class", "no-words-message")
+            .with_content(Text::new("You have no words yet. Add them by clicking the button above."))
+    } else {
+        let mut tbody_elements = MultipleHtmlElements::new();
+
+        for word in words {
+            tbody_elements = tbody_elements.add_element(
+                ClosableHtmlElement::new(Tr)
+                    .with_content(
+                        MultipleHtmlElements::new()
+                            .add_element(
+                                ClosableHtmlElement::new(Td)
+                                    .with_content(Text::new(word.word))
+                            )
+                            .add_element(
+                                ClosableHtmlElement::new(Td)
+                                    .with_content(Text::new(word.translation))
+                            )
+                    )
+            );
+        }
+
+        ClosableHtmlElement::new(Table)
+            .with_content(
+                MultipleHtmlElements::new()
+                    .add_element(
+                        ClosableHtmlElement::new(Thead)
+                            .with_content(
+                                MultipleHtmlElements::new()
+                                    .add_element(
+                                        ClosableHtmlElement::new(Th)
+                                            .with_content(Text::new("Word"))
+                                    )
+                                    .add_element(
+                                        ClosableHtmlElement::new(Td)
+                                            .with_content(Text::new("Translation"))
+                                    )
+                            )
+                    )
+                    .add_element(
+                        ClosableHtmlElement::new(Tbody)
+                            .with_content(tbody_elements)
+                    )
+            )
+    };
+
+    MultipleHtmlElements::new()
+        .add_element(ClosableHtmlElement::new(A)
+            .with_attribute("href", "/add-word")
+            .with_attribute("hx-boost", "true")
+            .with_attribute("hx-target", "main")
+            .with_attribute("class", "add-word-button")
+            .with_content(Text::new("Add word")))
+        .add_element(
+            words_content
         )
 }

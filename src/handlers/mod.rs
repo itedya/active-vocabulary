@@ -9,9 +9,10 @@ use serde::{Deserialize, Serialize};
 use sqlx::{Acquire, FromRow, PgPool};
 use sqlx::encode::IsNull::No;
 use tracing::log::{log, Level};
-use crate::components::{header, layout, layout_with_basic_wrappers, add_word_form, InputComponent, InputType, AddWordFormData, AddWordFormErrors, AddWordFormDataRedirectAction};
+use crate::components::{header, layout, layout_with_basic_wrappers, add_word_form, InputComponent, InputType, AddWordFormData, AddWordFormErrors, AddWordFormDataRedirectAction, word_list_component};
 use crate::html::{ClosableHtmlElement, MultipleHtmlElements, RenderableHtmlElement, Text};
-use crate::html::ClosableHtmlElementType::{Button, Div, Form, Main, Table, Tbody, Td, Th, Thead, Tr, A, P};
+use crate::html::ClosableHtmlElementType::{Button, Div, Form, Head, Main, Table, Tbody, Td, Th, Thead, Tr, A, P};
+use crate::models::Word;
 
 fn log_and_return_internal_error(e: impl std::error::Error) -> Response {
     log!(Level::Error, "{}", e);
@@ -22,84 +23,17 @@ fn log_and_return_internal_error(e: impl std::error::Error) -> Response {
         .unwrap()
 }
 
-#[derive(Debug, Clone, FromRow)]
-struct Word {
-    id: i32,
-    word: String,
-    translation: String,
-}
-
 #[debug_handler]
 pub async fn root(State(pool): State<PgPool>) -> Result<Response, Response> {
     let mut tx = pool.begin().await.map_err(log_and_return_internal_error)?;
 
     let words: Vec<Word> = sqlx::query_as("SELECT * FROM words")
         .fetch_all(&mut *tx)
-        .await
-        .map_err(log_and_return_internal_error)?;
+        .await.map_err(log_and_return_internal_error)?;
 
     tx.commit().await.map_err(log_and_return_internal_error)?;
 
-    let words_content = if words.len() == 0 {
-        ClosableHtmlElement::new(P)
-            .with_attribute("class", "no-words-message")
-            .with_content(Text::new("You have no words yet. Add them by clicking the button above."))
-    } else {
-        let mut tbody_elements = MultipleHtmlElements::new();
-
-        for word in words {
-            tbody_elements = tbody_elements.add_element(
-                ClosableHtmlElement::new(Tr)
-                    .with_content(
-                        MultipleHtmlElements::new()
-                            .add_element(
-                                ClosableHtmlElement::new(Td)
-                                    .with_content(Text::new(word.word))
-                            )
-                            .add_element(
-                                ClosableHtmlElement::new(Td)
-                                    .with_content(Text::new(word.translation))
-                            )
-                    )
-            );
-        }
-
-        ClosableHtmlElement::new(Table)
-            .with_content(
-                MultipleHtmlElements::new()
-                    .add_element(
-                        ClosableHtmlElement::new(Thead)
-                            .with_content(
-                                MultipleHtmlElements::new()
-                                    .add_element(
-                                        ClosableHtmlElement::new(Th)
-                                            .with_content(Text::new("Word"))
-                                    )
-                                    .add_element(
-                                        ClosableHtmlElement::new(Td)
-                                            .with_content(Text::new("Translation"))
-                                    )
-                            )
-                    )
-                    .add_element(
-                        ClosableHtmlElement::new(Tbody)
-                            .with_content(tbody_elements)
-                    )
-            )
-    };
-
-    Ok(RespondInHtml(layout_with_basic_wrappers(
-        MultipleHtmlElements::new()
-            .add_element(ClosableHtmlElement::new(A)
-                .with_attribute("href", "/add-word")
-                .with_attribute("hx-boost", "true")
-                .with_attribute("hx-target", "main")
-                .with_attribute("class", "add-word-button")
-                .with_content(Text::new("Add word")))
-            .add_element(
-                words_content
-            )
-    )).into_response())
+    Ok(RespondInHtml(layout_with_basic_wrappers(word_list_component(words))).into_response())
 }
 
 
@@ -115,8 +49,6 @@ pub async fn add_word_page(headers: HeaderMap) -> Result<Response, Response> {
 }
 
 pub async fn add_word(State(pool): State<PgPool>, ExtractForm(form): ExtractForm<AddWordFormData>) -> Result<Response, Response> {
-    dbg!(&form);
-
     let mut errors = AddWordFormErrors::default();
 
     if form.word.is_empty() {
@@ -135,23 +67,32 @@ pub async fn add_word(State(pool): State<PgPool>, ExtractForm(form): ExtractForm
         return Ok((StatusCode::OK, RespondInHtml(add_word_form(form, errors).render())).into_response());
     }
 
-    if form.redirect_action == AddWordFormDataRedirectAction::List {
-        let mut tx = pool.begin().await.map_err(log_and_return_internal_error)?;
+    let mut tx = pool.begin().await.map_err(log_and_return_internal_error)?;
 
-        sqlx::query("INSERT INTO words (word, translation) VALUES ($1, $2)")
-            .bind(&form.word)
-            .bind(&form.translation)
-            .execute(&mut *tx)
-            .await
-            .map_err(log_and_return_internal_error)?;
+    sqlx::query("INSERT INTO words (word, translation) VALUES ($1, $2)")
+        .bind(form.word)
+        .bind(form.translation)
+        .execute(&mut *tx)
+        .await.map_err(log_and_return_internal_error)?;
+
+    if form.redirect_action == AddWordFormDataRedirectAction::List {
+        let words: Vec<Word> = sqlx::query_as("SELECT * FROM words")
+            .fetch_all(&mut *tx)
+            .await.map_err(log_and_return_internal_error)?;
 
         tx.commit().await.map_err(log_and_return_internal_error)?;
 
         let mut headers = HeaderMap::new();
-        headers.insert("HX-Redirect", "/".parse().unwrap());
+        headers.insert("HX-Push-Url", "/".parse().unwrap());
+        headers.insert("HX-Retarget", "body".parse().unwrap());
 
-        return Ok((StatusCode::CREATED, headers).into_response());
+        return Ok((StatusCode::OK, headers, RespondInHtml(layout_with_basic_wrappers(word_list_component(words)))).into_response());
     }
 
-    Ok((StatusCode::OK, RespondInHtml(layout_with_basic_wrappers(add_word_form(Default::default(), Default::default())))).into_response())
+    tx.commit().await.map_err(log_and_return_internal_error)?;
+
+    let mut headers = HeaderMap::new();
+    headers.insert("HX-Retarget", "body".parse().unwrap());
+
+    Ok((StatusCode::OK, headers, RespondInHtml(layout_with_basic_wrappers(add_word_form(Default::default(), Default::default())))).into_response())
 }
