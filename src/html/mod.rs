@@ -18,7 +18,6 @@ pub enum ClosableHtmlElementType {
     H6,
     P,
     A,
-    Img,
     Ul,
     Ol,
     Li,
@@ -57,7 +56,6 @@ impl Into<String> for ClosableHtmlElementType {
             ClosableHtmlElementType::H6 => "h6".to_string(),
             ClosableHtmlElementType::P => "p".to_string(),
             ClosableHtmlElementType::A => "a".to_string(),
-            ClosableHtmlElementType::Img => "img".to_string(),
             ClosableHtmlElementType::Ul => "ul".to_string(),
             ClosableHtmlElementType::Ol => "ol".to_string(),
             ClosableHtmlElementType::Li => "li".to_string(),
@@ -139,6 +137,7 @@ pub enum NonClosableHtmlElementType {
     Hr,
     Input,
     Meta,
+    Img,
     Link,
 }
 
@@ -151,6 +150,7 @@ impl Into<String> for NonClosableHtmlElementType {
             NonClosableHtmlElementType::Input => "input".to_string(),
             NonClosableHtmlElementType::Meta => "meta".to_string(),
             NonClosableHtmlElementType::Link => "link".to_string(),
+            NonClosableHtmlElementType::Img => "img".to_string(),
         }
     }
 }
@@ -255,5 +255,19 @@ impl Text {
 impl RenderableHtmlElement for Text {
     fn render(&self) -> String {
         html_escape::encode_text(&self.0).to_string()
+    }
+}
+
+pub struct UnsafeText(pub String);
+
+impl UnsafeText {
+    pub fn new(text: impl Into<String>) -> Self {
+        Self(text.into())
+    }
+}
+
+impl RenderableHtmlElement for UnsafeText {
+    fn render(&self) -> String {
+        self.0.clone()
     }
 }
