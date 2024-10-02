@@ -126,3 +126,53 @@ pub async fn delete_word(State(pool): State<PgPool>, ExtractForm(form): ExtractF
 
     Ok((StatusCode::OK, headers, RespondInHtml(response_html)).into_response())
 }
+
+#[debug_handler]
+pub async fn teach(State(pool): State<PgPool>, request_headers: HeaderMap) -> Result<Response, Response> {
+    let mut tx = pool.begin().await.map_err(log_and_return_internal_error)?;
+
+    let lacking_examples_and_not_in_process_of_generation: Vec<i32> = sqlx::query_scalar(
+        concat!("SELECT words.id FROM words ",
+        "LEFT JOIN examples ON words.id = examples.word_id ",
+        "LEFT JOIN example_generation_queue ON words.id = example_generation_queue.word_id WHERE examples.id IS NULL AND example_generation_queue.id IS NULL"
+        )
+    )
+        .fetch_all(&mut *tx)
+        .await
+        .map_err(log_and_return_internal_error)?;
+
+    // add them to generation if none are in process of generation
+    if !lacking_examples_and_not_in_process_of_generation.is_empty() {
+        dbg!(lacking_examples_and_not_in_process_of_generation.clone());
+
+        let ids = lacking_examples_and_not_in_process_of_generation.iter()
+            .map(|id| id.to_string()).collect::<Vec<String>>().join(", ");
+
+        // this sql injection in safe, because we're the ones who generate the ids
+        sqlx::query(&format!("INSERT INTO example_generation_queue (word_id) VALUES ({})", ids))
+            .bind(ids)
+            .execute(&mut *tx)
+            .await
+            .map_err(log_and_return_internal_error)?;
+    }
+
+    let in_generation: Vec<Word> = sqlx::query_as("SELECT words.* FROM example_generation_queue INNER JOIN words ON example_generation_queue.word_id = words.id")
+        .fetch_all(&mut *tx)
+        .await
+        .map_err(log_and_return_internal_error)?;
+
+    tx.commit().await.map_err(log_and_return_internal_error)?;
+
+    // if !in_generation.is_empty() {
+    //     let content = word_list_component(in_generation);
+    //
+    //     if request_headers.contains_key("HX-Request") {
+    //         return Ok((StatusCode::OK, RespondInHtml(content.render())).into_response());
+    //     }
+    //
+    //     return Ok((StatusCode::OK, RespondInHtml(layout_with_basic_wrappers(content))).into_response());
+    // }
+    //
+    // Ok((StatusCode::OK, RespondInHtml(layout_with_basic_wrappers(Text::new("Teach page")))).into_response())
+    unimplemented!()
+}

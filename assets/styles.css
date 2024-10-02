@@ -133,13 +133,37 @@ main {
     cursor: pointer;
 }
 
-.add-word-button > svg {
+.button-icon {
     width: 24px;
     height: 24px;
 }
 
 .add-word-button:hover {
     background-color: var(--secondary-400);
+}
+
+.button-primary-big,
+.button-secondary-big {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    padding: 20px 32px;
+    width: 100%;
+    font-size: 16px;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.button-primary-big {
+    color: var(--background);
+    background-color: var(--primary);
+}
+
+.button-secondary-big {
+    color: var(--background);
+    background-color: var(--secondary);
 }
 
 .no-words-message {
@@ -203,6 +227,10 @@ main {
     border: 0;
     border-radius: 0.5rem;
     cursor: pointer;
+}
+
+.w-full {
+    width: 100%;
 }
 
 .flex {
