@@ -10,7 +10,7 @@ use sqlx::{Acquire, FromRow, PgPool};
 use sqlx::encode::IsNull::No;
 use tracing::log::{log, Level};
 use crate::components::{header, layout, layout_with_basic_wrappers, add_word_form, InputComponent, InputType, AddWordFormData, AddWordFormErrors, AddWordFormDataRedirectAction, word_list_component};
-use crate::html::{ClosableHtmlElement, MultipleHtmlElements, RenderableHtmlElement, Text};
+use crate::html::{ClosableHtmlElement, MultipleHtmlElements, RenderableHtmlElement, Text, UnsafeText};
 use crate::html::ClosableHtmlElementType::{Button, Div, Form, Head, Main, Table, Tbody, Td, Th, Thead, Tr, A, P};
 use crate::models::Word;
 
@@ -163,16 +163,18 @@ pub async fn teach(State(pool): State<PgPool>, request_headers: HeaderMap) -> Re
 
     tx.commit().await.map_err(log_and_return_internal_error)?;
 
-    // if !in_generation.is_empty() {
-    //     let content = word_list_component(in_generation);
-    //
-    //     if request_headers.contains_key("HX-Request") {
-    //         return Ok((StatusCode::OK, RespondInHtml(content.render())).into_response());
-    //     }
-    //
-    //     return Ok((StatusCode::OK, RespondInHtml(layout_with_basic_wrappers(content))).into_response());
-    // }
-    //
-    // Ok((StatusCode::OK, RespondInHtml(layout_with_basic_wrappers(Text::new("Teach page")))).into_response())
+    if !in_generation.is_empty() {
+        let content = MultipleHtmlElements::new()
+            .add_element(Text::new(format!("Generating examples for words: {}. Please wait.", in_generation.iter().map(|word| word.word.clone()).collect::<Vec<String>>().join(", "))))
+            .add_element(UnsafeText::new("<script>setTimeout(() => { window.location.reload(); }, 3000);</script>"));
+
+        if request_headers.contains_key("HX-Request") {
+            return Ok((StatusCode::OK, RespondInHtml(content.render())).into_response());
+        }
+
+        return Ok((StatusCode::OK, RespondInHtml(layout_with_basic_wrappers(content))).into_response());
+    }
+
+    // Ok((StatusCode::OK, RespondInHtml(layout_with_basic_wrappers(Text::new("Teach page")))).into_response());
     unimplemented!()
 }

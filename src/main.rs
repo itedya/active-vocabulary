@@ -2,6 +2,7 @@ mod handlers;
 mod html;
 mod components;
 mod models;
+mod generation_queue;
 
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -11,6 +12,8 @@ use axum::routing::{get, post};
 use axum_embed::ServeEmbed;
 use lazy_static::lazy_static;
 use sqlx::postgres::PgPoolOptions;
+use tokio_util::sync::CancellationToken;
+use crate::generation_queue::generation_queue_worker;
 
 #[derive(RustEmbed, Clone)]
 #[folder = "assets/"]
@@ -44,6 +47,10 @@ async fn main() {
         .await
         .unwrap();
 
+    let cancellation_token = CancellationToken::new();
+
+    tokio::spawn(generation_queue_worker(cancellation_token.clone(), pool.clone()));
+
     let serve_assets = ServeEmbed::<Assets>::new();
 
     let app = Router::new()
@@ -55,5 +62,14 @@ async fn main() {
         .with_state(pool);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let webserver_future = axum::serve(listener, app);
+
+    tokio::select! {
+        _ = webserver_future => {
+            cancellation_token.cancel();
+        },
+        _ = tokio::signal::ctrl_c() => {
+            cancellation_token.cancel();
+        }
+    }
 }

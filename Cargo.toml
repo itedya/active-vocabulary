@@ -18,3 +18,5 @@ tracing = { version = "0.1.40", features = ["log"] }
 tracing-subscriber = "0.3.18"
 rand = { version = "0.8.5", features = [] }
 sqlx-core = "0.8.2"
+tokio-util = "0.7.12"
+async-openai = "0.24.1"
