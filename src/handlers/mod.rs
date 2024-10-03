@@ -146,10 +146,13 @@ pub async fn teach(State(pool): State<PgPool>, request_headers: HeaderMap) -> Re
         dbg!(lacking_examples_and_not_in_process_of_generation.clone());
 
         let ids = lacking_examples_and_not_in_process_of_generation.iter()
-            .map(|id| id.to_string()).collect::<Vec<String>>().join(", ");
+            .map(|id| id.to_string())
+            .map(|v| format!("({v})"))
+            .collect::<Vec<String>>()
+            .join(", ");
 
         // this sql injection in safe, because we're the ones who generate the ids
-        sqlx::query(&format!("INSERT INTO example_generation_queue (word_id) VALUES ({})", ids))
+        sqlx::query(&format!("INSERT INTO example_generation_queue (word_id) VALUES {}", ids))
             .bind(ids)
             .execute(&mut *tx)
             .await
@@ -166,7 +169,7 @@ pub async fn teach(State(pool): State<PgPool>, request_headers: HeaderMap) -> Re
     if !in_generation.is_empty() {
         let content = MultipleHtmlElements::new()
             .add_element(Text::new(format!("Generating examples for words: {}. Please wait.", in_generation.iter().map(|word| word.word.clone()).collect::<Vec<String>>().join(", "))))
-            .add_element(UnsafeText::new("<script>setTimeout(() => { window.location.reload(); }, 3000);</script>"));
+            .add_element(UnsafeText::new("<script>setTimeout(() => { window.location.reload(); }, 1500);</script>"));
 
         if request_headers.contains_key("HX-Request") {
             return Ok((StatusCode::OK, RespondInHtml(content.render())).into_response());
