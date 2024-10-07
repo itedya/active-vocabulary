@@ -297,3 +297,38 @@ tbody > tr:last-child > td {
     border: 0;
     cursor: pointer;
 }
+
+.learn-input {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    font-size: 72px;
+    color: var(--text);
+    margin-bottom: 24px;
+}
+
+.learn-input:focus {
+    outline: none;
+}
+
+.learn-sentence {
+    font-size: 24px;
+    color: var(--text-800);
+    margin-bottom: 24px;
+}
+
+.learn-sentence > span {
+    color: var(--text);
+}
+
+.learn-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+
+.max-300-px-width {
+    width: 300px;
+}

@@ -1,7 +1,7 @@
 use rand::random;
 use serde::Deserialize;
 use crate::html::{ClosableHtmlElement, MultipleHtmlElements, NonClosableHtmlElement, RenderableHtmlElement, Text, UnsafeText};
-use crate::html::ClosableHtmlElementType::{Body, Button, Div, Form, Head, Header, Html, Label, Main, Script, Table, Tbody, Td, Th, Thead, Title, Tr, A, H1, P};
+use crate::html::ClosableHtmlElementType::{Body, Button, Div, Form, Head, Header, Html, Label, Main, Script, Span, Table, Tbody, Td, Th, Thead, Title, Tr, A, H1, P};
 use crate::html::NonClosableHtmlElementType::{Doctype, Img, Input, Link, Meta};
 use crate::models::Word;
 
@@ -335,5 +335,46 @@ pub fn word_list_component(words: Vec<Word>) -> impl RenderableHtmlElement {
         )
         .add_element(
             words_content
+        )
+}
+
+pub fn learn_word(translation: impl Into<String>, sentence: impl Into<String>) -> impl RenderableHtmlElement {
+    ClosableHtmlElement::new(Div)
+        .with_content(
+            MultipleHtmlElements::new()
+                .add_element(
+                    ClosableHtmlElement::new(P)
+                        .with_attribute("class", "learn-sentence")
+                        .with_content(
+                            MultipleHtmlElements::new()
+                                .add_element(Text::new("Translation: "))
+                                .add_element(ClosableHtmlElement::new(Span)
+                                    .with_content(Text::new(translation)))
+                        )
+                )
+                .add_element(
+                    ClosableHtmlElement::new(P)
+                        .with_attribute("class", "learn-sentence")
+                        .with_content(
+                            MultipleHtmlElements::new()
+                                .add_element(Text::new("Sentence: "))
+                                .add_element(ClosableHtmlElement::new(Span)
+                                    .with_content(Text::new(sentence)))
+                        )
+                )
+                .add_element(
+                    NonClosableHtmlElement::new(Input)
+                        .with_attribute("class", "learn-input")
+                        .with_attribute("placeholder", "Write missing part here")
+                        .with_attribute("autofocus", "")
+                )
+                .add_element(
+                    ClosableHtmlElement::new(Div)
+                        .with_attribute("class", "learn-actions")
+                        .with_content(ClosableHtmlElement::new(Button)
+                            .with_attribute("class", "button-primary-big max-300-px-width")
+                            .with_content(Text::new("Check"))
+                        )
+                )
         )
 }

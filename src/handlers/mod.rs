@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::{Acquire, FromRow, PgPool};
 use sqlx::encode::IsNull::No;
 use tracing::log::{log, Level};
-use crate::components::{header, layout, layout_with_basic_wrappers, add_word_form, InputComponent, InputType, AddWordFormData, AddWordFormErrors, AddWordFormDataRedirectAction, word_list_component};
+use crate::components::{header, layout, layout_with_basic_wrappers, add_word_form, InputComponent, InputType, AddWordFormData, AddWordFormErrors, AddWordFormDataRedirectAction, word_list_component, learn_word};
 use crate::html::{ClosableHtmlElement, MultipleHtmlElements, RenderableHtmlElement, Text, UnsafeText};
 use crate::html::ClosableHtmlElementType::{Button, Div, Form, Head, Main, Table, Tbody, Td, Th, Thead, Tr, A, P};
 use crate::models::Word;
@@ -178,6 +178,11 @@ pub async fn teach(State(pool): State<PgPool>, request_headers: HeaderMap) -> Re
         return Ok((StatusCode::OK, RespondInHtml(layout_with_basic_wrappers(content))).into_response());
     }
 
-    // Ok((StatusCode::OK, RespondInHtml(layout_with_basic_wrappers(Text::new("Teach page")))).into_response());
-    unimplemented!()
+    let content = if request_headers.contains_key("HX-Request") {
+        learn_word("Nie wiesz gdzie są aktualne karteczki, tak?", "You don't know where are the most recent papers, ___?").render()
+    } else {
+        layout_with_basic_wrappers(learn_word("Nie wiesz gdzie są aktualne karteczki, tak?", "You don't know where are the most recent papers, ___?"))
+    };
+
+    Ok((StatusCode::OK, RespondInHtml(content)).into_response())
 }
