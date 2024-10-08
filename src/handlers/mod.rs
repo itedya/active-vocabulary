@@ -186,3 +186,13 @@ pub async fn learn(State(pool): State<PgPool>, request_headers: HeaderMap) -> Re
 
     Ok((StatusCode::OK, RespondInHtml(content)).into_response())
 }
+
+pub async fn check_learn(State(pool): State<PgPool>) -> Result<Response, Response> {
+    // let mut tx = pool.begin().await.unwrap();
+
+    let content = ClosableHtmlElement::new(P)
+        .with_content(Text::new("Check learn handler"))
+        .render();
+
+    Ok((StatusCode::OK, RespondInHtml(content)).into_response())
+}

@@ -57,7 +57,7 @@ async fn main() {
         .route("/", get(handlers::root))
         .route("/add-word", get(handlers::add_word_page).post(handlers::add_word))
         .route("/delete-word", post(handlers::delete_word))
-        .route("/learn", get(handlers::learn))
+        .route("/learn", get(handlers::learn).post(handlers::check_learn))
         .nest_service("/assets", serve_assets)
         .with_state(pool);
 

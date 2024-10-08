@@ -372,6 +372,8 @@ pub fn learn_word(translation: impl Into<String>, sentence: impl Into<String>) -
                     ClosableHtmlElement::new(Div)
                         .with_attribute("class", "learn-actions")
                         .with_content(ClosableHtmlElement::new(Button)
+                            .with_attribute("hx-post", "/learn")
+                            .with_attribute("hx-target", "main")
                             .with_attribute("class", "button-primary-big max-300-px-width")
                             .with_content(Text::new("Check"))
                         )
