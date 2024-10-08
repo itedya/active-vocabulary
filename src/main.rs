@@ -5,7 +5,6 @@ mod models;
 mod generation_queue;
 mod gpt;
 
-use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use rust_embed::RustEmbed;
 use axum::Router;
