@@ -128,7 +128,7 @@ pub async fn delete_word(State(pool): State<PgPool>, ExtractForm(form): ExtractF
 }
 
 #[debug_handler]
-pub async fn teach(State(pool): State<PgPool>, request_headers: HeaderMap) -> Result<Response, Response> {
+pub async fn learn(State(pool): State<PgPool>, request_headers: HeaderMap) -> Result<Response, Response> {
     let mut tx = pool.begin().await.map_err(log_and_return_internal_error)?;
 
     let lacking_examples_and_not_in_process_of_generation: Vec<i32> = sqlx::query_scalar(

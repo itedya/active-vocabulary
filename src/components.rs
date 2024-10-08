@@ -321,7 +321,7 @@ pub fn word_list_component(words: Vec<Word>) -> impl RenderableHtmlElement {
                         ))
                     .add_element(
                         ClosableHtmlElement::new(A)
-                            .with_attribute("href", "/teach")
+                            .with_attribute("href", "/learn")
                             .with_attribute("hx-boost", "true")
                             .with_attribute("hx-target", "main")
                             .with_attribute("class", "button-primary-big")
